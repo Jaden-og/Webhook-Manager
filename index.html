@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        header {
+            background: #333;
+            color: #fff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #bbb 1px solid;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            text-align: center;
+            text-transform: uppercase;
+            margin: 0;
+            font-size: 24px;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #555;
+        }
+        #embedOptions {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Webhook Manager</h1>
+        </div>
+    </header>
+    <div class="container">
+        <form id="webhookForm">
+            <input type="text" id="webhookUrl" placeholder="Webhook URL" required>
+            <textarea id="messageContent" placeholder="Message Content" rows="5" required></textarea>
+            <label for="useEmbed">Send as Embed:</label>
+            <select id="useEmbed">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+            </select>
+
+            <div id="embedOptions">
+                <h3>Embed Options</h3>
+                <input type="text" id="embedTitle" placeholder="Embed Title">
+                <textarea id="embedDescription" placeholder="Embed Description" rows="3"></textarea>
+                <input type="text" id="embedColor" placeholder="Embed Color (hex)" value="#000000">
+                <input type="text" id="embedImage" placeholder="Embed Image URL">
+            </div>
+            <button type="submit">Send Message</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById('useEmbed').addEventListener('change', function() {
+            const embedOptions = document.getElementById('embedOptions');
+            embedOptions.style.display = this.value === 'true' ? 'block' : 'none';
+        });
+
+        document.getElementById('webhookForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const webhookUrl = document.getElementById('webhookUrl').value;
+            const messageContent = document.getElementById('messageContent').value;
+            const useEmbed = document.getElementById('useEmbed').value === 'true';
+
+            const payload = useEmbed ? {
+                content: messageContent,
+                embeds: [{
+                    title: document.getElementById('embedTitle').value,
+                    description: document.getElementById('embedDescription').value,
+                    color: parseInt(document.getElementById('embedColor').value.replace('#', ''), 16),
+                    image: {
+                        url: document.getElementById('embedImage').value
+                    }
+                }]
+            } : {
+                content: messageContent
+            };
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert('Message sent successfully!');
+                } else {
+                    alert('Failed to send message.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred.');
+            }
+        });
+    </script>
+</body>
+</html>
